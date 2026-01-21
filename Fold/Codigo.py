@@ -34,9 +34,9 @@ def Inventarios(archivo_xlsx):
 
     # --- 1) Columna 8 (H) sin nombre -> "Descripción"
     # (columna 8 = índice 7)
-    if df.shape[1] >= 8:
-        df.columns = list(df.columns)  # asegurar que es lista
-        df.columns.values[7] = "Descripción"
+    if df.shape[1] >= 9:
+        df.columns = list(df.columns)
+        df.columns.values[8] = "Descripción"
 
     # --- 2) Dropear "Metrics" (si existe)
     # (por si viene con mayúsculas/minúsculas diferentes)
@@ -209,9 +209,11 @@ def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 2):
     ART = pick(["Artículo"])
     PLZ = pick(["Plaza"])
     TND = pick(["Tienda"])
+    INV_COL = pick(["Inventario", "Unidades Inventario", "Unidades"])
+   
+    d = df[[ART,PLZ,TND] + ([INV_COL] if INV_COL else [])].copy().astype({PLZ:str, TND:str, ART:str})
+    d["_pres"] = (pd.to_numeric(d[INV_COL], errors="coerce").fillna(0) > umbral_inv) if INV_COL else True
 
-    d = df[[ART,PLZ,TND] + ([INV] if INV else [])].copy().astype({PLZ:str, TND:str, ART:str})
-    d["_pres"] = (pd.to_numeric(d[INV], errors="coerce").fillna(0) > umbral_inv) if INV else True
     pres = d.groupby([ART,PLZ,TND], as_index=False)["_pres"].max()
     num = pres.groupby([ART,PLZ])["_pres"].sum().reset_index(name="Tiendas_con_art")
 
@@ -250,11 +252,12 @@ def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
     ART = pick(["Artículo"])
     PLZ = pick(["Plaza"])
     TND = pick(["Tienda"])
-    DIV = pick(["Division"])
+    DIV = pick(["Cc División"])
+    INV_COL = pick(["Inventario", "Unidades Inventario", "Unidades"])
 
+    d = df[[ART,PLZ,TND,DIV] + ([INV_COL] if INV_COL else [])].copy().astype({PLZ:str, TND:str, ART:str, DIV:str})
+    d["_pres"] = (pd.to_numeric(d[INV_COL], errors="coerce").fillna(0) > umbral_inv) if INV_COL else True
 
-    d = df[[ART,PLZ,TND,DIV] + ([INV] if INV else [])].copy().astype({PLZ:str, TND:str, ART:str, DIV:str})
-    d["_pres"] = (pd.to_numeric(d[INV], errors="coerce").fillna(0) > umbral_inv) if INV else True
     pres = d.groupby([DIV,ART,PLZ,TND], as_index=False)["_pres"].max()
 
     # Número de tiendas por artículo dentro de cada división
