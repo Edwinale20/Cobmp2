@@ -145,7 +145,7 @@ def cobertura_tabla(df):
         "Tamaulipas (Reynosa)":168,"Baja California (Tijuana)":86,"Baja California (Mexicali)":61,
         "Baja California (Ensenada)":24,"Jalisco":181,"Yucatán":29,"Sonora (Hermosillo)":21,
     }
-    ART = "Artículo"
+    ART = "Descripción"
     PLZ = "Plaza"
     TND = "Tienda"
    
@@ -206,7 +206,7 @@ st.markdown(styled.to_html(), unsafe_allow_html=True)
 # === 1) Cobertura por artículo (global) ======================================
 def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 2):
     pick = lambda names: next((c for c in names if c in df.columns), None)
-    ART = pick(["Artículo"])
+    ART = pick(["Descripción"])
     PLZ = pick(["Plaza"])
     TND = pick(["Tienda"])
     INV_COL = pick(["Inventario", "Unidades Inventario", "Unidades"])
@@ -249,10 +249,10 @@ TOTALES_PLAZA = {
 @st.cache_data
 def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
     pick = lambda names: next((c for c in names if c in df.columns), None)
-    ART = pick(["Artículo"])
+    ART = pick(["Descripción"])
     PLZ = pick(["Plaza"])
     TND = pick(["Tienda"])
-    DIV = pick(["Cc División"])
+    DIV = pick(["División"])
     INV_COL = pick(["Inventario", "Unidades Inventario", "Unidades"])
 
     d = df[[ART,PLZ,TND,DIV] + ([INV_COL] if INV_COL else [])].copy().astype({PLZ:str, TND:str, ART:str, DIV:str})
