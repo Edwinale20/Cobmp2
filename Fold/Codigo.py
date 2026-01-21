@@ -76,7 +76,7 @@ st.success("✅ Los inventarios de tu categoría fueron cargados con éxito.")
 #----------------------------------------------------------------------------------------
 
 
-st.sidebar.image("https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/Carpeta/el-logo.png", width=170)
+st.sidebar.image("https://raw.githubusercontent.com/Edwinale20/Cobmp2/main/Fold/el-logo.png", width=170)
 st.sidebar.title("🔠  Filtros")
 
 opciones_division = ['Ninguno'] + list(INV['División'].unique())
