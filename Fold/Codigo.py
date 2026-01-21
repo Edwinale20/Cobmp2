@@ -66,7 +66,7 @@ if archivo_xlsx is not None:
     
 #----------------------------------------------------------------------------------------    
 
-INV = Inventarios(archivo_zip)  # <- como querías
+INV = Inventarios(archivo_xlsx)  # <- como querías
 
 if INV is None:
     st.stop()
