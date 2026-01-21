@@ -105,7 +105,7 @@ articulo_busqueda = st.sidebar.text_input("Buscar Artículo:")
 if division == 'Ninguno':
     df_venta_perdida_filtrada = INV
 else:
-    df_venta_perdida_filtrada = INV[INV['Division'] == division]
+    df_venta_perdida_filtrada = INV[INV['División'] == division]
 
 # Filtrar por Plaza
 if plaza != 'Ninguno':
