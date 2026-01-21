@@ -97,7 +97,7 @@ categoria = st.sidebar.selectbox('Seleccione la Categoria', opciones_categoria)
 #opciones_proveedor = ['Ninguno'] + list(INV['PROVEEDOR'].unique())
 #proveedor = st.sidebar.selectbox('Seleccione el Proveedor', opciones_proveedor)
 
-articulo_busqueda = st.sidebar.text_input("Buscar Artículo:")
+articulo_busqueda = st.sidebar.text_input("Buscar Descripción:")
 
 
 
@@ -121,7 +121,7 @@ if categoria != 'Ninguno':
 
 if articulo_busqueda:
     df_venta_perdida_filtrada = df_venta_perdida_filtrada[
-        df_venta_perdida_filtrada['Artículo'].str.contains(
+        df_venta_perdida_filtrada['Descripción'].str.contains(
             articulo_busqueda, case=False, na=False
         )
     ]
@@ -129,7 +129,7 @@ if articulo_busqueda:
 
 if articulo_busqueda:
     df_venta_perdida_filtrada = df_venta_perdida_filtrada[
-        df_venta_perdida_filtrada['Artículo'].str.contains(articulo_busqueda, case=False, na=False)]
+        df_venta_perdida_filtrada['Descripción'].str.contains(articulo_busqueda, case=False, na=False)]
     
 
 #----------------------------------------------------------------------------------------
