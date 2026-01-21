@@ -140,10 +140,10 @@ def cobertura_tabla(df):
     df.columns = df.columns.astype(str).str.strip()
 
     TOTALES = {
-        "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":390,
-        "Nuevo León":751,"Puebla":22,"Quintana Roo":103,"Tamaulipas (Matamoros)":59,
-        "Tamaulipas (Reynosa)":168,"Baja California (Tijuana)":86,"Baja California (Mexicali)":61,
-        "Baja California (Ensenada)":24,"Jalisco":181,"Yucatán":29,"Sonora (Hermosillo)":21,
+        "Coahuila (Saltillo)":85,"Coahuila (Torreón)":53,"Morelos":13,"México":392,
+        "Nuevo León":747,"Puebla":22,"Quintana Roo":105,"Tamaulipas (Matamoros)":79,
+        "Tamaulipas (Reynosa)":169,"Baja California (Tijuana)":89,"Baja California (Mexicali)":64,
+        "Baja California (Ensenada)":24,"Jalisco":182,"Yucatán":30,"Sonora (Hermosillo)":22,
     }
     ART = "Descripción"
     PLZ = "Plaza"
@@ -237,10 +237,10 @@ def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 2):
 
 
 TOTALES_PLAZA = {
-    "Coahuila (Saltillo)":85, "Coahuila (Torreón)":54, "Morelos":12, "México":390,
-    "Nuevo León":751, "Puebla":22, "Quintana Roo":103, "Tamaulipas (Matamoros)":59,
-    "Tamaulipas (Reynosa)":168, "Baja California (Tijuana)":86, "Baja California (Mexicali)":61,
-    "Baja California (Ensenada)":24, "Jalisco":181, "Yucatán":30, "Sonora (Hermosillo)":21,
+      "Coahuila (Saltillo)":85,"Coahuila (Torreón)":53,"Morelos":13,"México":392,
+      "Nuevo León":747,"Puebla":22,"Quintana Roo":105,"Tamaulipas (Matamoros)":79,
+      "Tamaulipas (Reynosa)":169,"Baja California (Tijuana)":89,"Baja California (Mexicali)":64,
+      "Baja California (Ensenada)":24,"Jalisco":182,"Yucatán":30,"Sonora (Hermosillo)":22,
 }
 
 
