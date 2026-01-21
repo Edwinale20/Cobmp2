@@ -136,6 +136,8 @@ if articulo_busqueda:
 
 @st.cache_data
 def cobertura_tabla(df):
+    
+    df.columns = df.columns.astype(str).str.strip()
 
     TOTALES = {
         "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":390,
