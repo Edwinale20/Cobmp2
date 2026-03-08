@@ -53,7 +53,7 @@ uploader_placeholder = st.empty()
 
 # El uploader vive dentro del placeholder (ahora XLSX)
 archivo_xlsx = uploader_placeholder.file_uploader(
-    "📤 Sube tu archivo de Inventarios (312 de BI)",
+    "📤 Sube tu archivo de Inventarios",
     type=["xlsx"]
 )
 
