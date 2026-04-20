@@ -30,7 +30,7 @@ def Inventarios(archivo_xlsx):
         return None
 
     # Fila 3 como header (A3:L3), porque header es 0-index => 2 = tercera fila
-    df = pd.read_excel(archivo_xlsx, sheet_name=0, header=2)
+    df = pd.read_excel(archivo_xlsx, sheet_name=0, header=0)
 
     # --- 1) Columna 8 (H) sin nombre -> "Descripción"
     # (columna 8 = índice 7)
