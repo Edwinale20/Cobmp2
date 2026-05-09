@@ -16,7 +16,6 @@ import io
 st.set_page_config(page_title="Cobertura Marca Propia", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
 st.title("📊 Reporte de Cobertura | Marca Propia 🏪")
 st.markdown("✅ Arrastra aquí tu archivo de inventarios")
-st.markdown("✅ Esta app analiza en menos de 30 segundos las coberturas de todo el catálogo de tu categoría. Te ahorramos hasta 5 horas de trabajo semanales!")
 st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas reiniciar todo solo da refresh a la página")
 kpi_top = st.container()
 
@@ -70,7 +69,7 @@ INV = Inventarios(archivo_xlsx)  # <- como querías
 if INV is None:
     st.stop()
 
-st.success("✅ Los inventarios de tu categoría fueron cargados con éxito.")
+st.success("✅ Los inventarios fueron cargados con éxito.")
 
 #----------------------------------------------------------------------------------------
 
