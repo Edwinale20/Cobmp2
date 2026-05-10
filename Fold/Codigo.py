@@ -56,9 +56,10 @@ st.success("✅ Los inventarios fueron cargados con éxito.")
 
 INV = con.execute("SELECT * FROM inv").df()
 ultima_fecha = INV["Fecha"].max() if "Fecha" in INV.columns else pd.Timestamp.today()
-@st.cache_data
-
+INV.columns.values[8] = "Descripción"
+INV = INV.drop(columns=[c for c in INV.columns if str(c).lower() == "metrics"], errors="ignore")
 #1.3
+@st.cache_data
 def calcular_totales_plaza(inv):
     """Universo de tiendas por Plaza, derivado del archivo (no del df filtrado)."""
     return inv.groupby("Plaza")["Tienda"].nunique().to_dict()
