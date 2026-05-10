@@ -96,7 +96,20 @@ if "Catalogación" in df.columns:
 # =========================
 # SECCIÓN 4 — Calculos y tabla
 # =========================
-
+#4.1 Colores
+def color_sem(serie):
+    colors = []
+    for v in serie:
+        if pd.isna(v):
+            colors.append("background-color: lightgray; color: black;")
+        elif v < 40:
+            colors.append("background-color: #ff4d4d; color: white;")
+        elif v < 90:
+            colors.append("background-color: #ffd633; color: black;")
+        else:
+            colors.append("background-color: #5cd65c; color: black;")
+    return colors
+    
 #4.2: Tabla de cobertura
 @st.cache_data
 def cobertura_tabla(df, totales):              # ← quita el default =TOTALES_PLAZA
