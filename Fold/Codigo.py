@@ -1,4 +1,6 @@
 import pandas as pd
+import duckdb 
+from duckdb import excel
 import glob
 import os
 import streamlit as st
@@ -9,290 +11,99 @@ import plotly.io as pio
 import subprocess
 import zipfile
 import io
-
-#----------------------------------------------------------------------------------------
-
-   
+import tempfile
+#---------------------------------------------------------------------------------------- 
 st.set_page_config(page_title="Cobertura Marca Propia", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
 st.title("📊 Reporte de Cobertura | Marca Propia 🏪")
-st.markdown("✅ Arrastra aquí tu archivo de inventarios")
+st.markdown("✅ Arrastra aquí el archivo de inventarios")
 st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas reiniciar todo solo da refresh a la página")
 kpi_top = st.container()
 
- 
 #----------------------------------------------------------------------------------------   
+#1: Creación de Excel a DuckDB
+@st.cache_resource
+def get_con():
+    con = duckdb.connect(":memory:")
+    con.execute("INSTALL excel; LOAD excel;")
+    return con
 
-@st.cache_data
-def Inventarios(archivo_xlsx):
-    if archivo_xlsx is None:
+# 1.1: Cargar inventarios a DuckDB
+def Inventarios(archivo_subido):
+    if archivo_subido is None:
         return None
-
-    # Fila 3 como header (A3:L3), porque header es 0-index => 2 = tercera fila
-    df = pd.read_excel(archivo_xlsx, sheet_name=0, header=0)
-
-    # --- 1) Columna 8 (H) sin nombre -> "Descripción"
-    # (columna 8 = índice 7)
-    if df.shape[1] >= 9:
-        df.columns = list(df.columns)
-        df.columns.values[8] = "Descripción"
-
-    # --- 2) Dropear "Metrics" (si existe)
-    # (por si viene con mayúsculas/minúsculas diferentes)
-    cols_lower = {c.lower(): c for c in df.columns if isinstance(c, str)}
-    if "metrics" in cols_lower:
-        df = df.drop(columns=[cols_lower["metrics"]])
-
-    combined_df = df.copy()
-    return combined_df
-
-#---------------------------------------------------------------------------------------- AQUÍ defines el uploader y llamas a tu función ---
-# Placeholder
-uploader_placeholder = st.empty()
-
-# El uploader vive dentro del placeholder (ahora XLSX)
-archivo_xlsx = uploader_placeholder.file_uploader(
-    "📤 Sube tu archivo de Inventarios",
-    type=["xlsx"]
-)
-
-if archivo_xlsx is not None:
-    # Quitar uploader
-    uploader_placeholder.empty()
-
-    # Llamas tu función (misma salida: DataFrame)
-    combined_df = Inventarios(archivo_xlsx)
     
-#----------------------------------------------------------------------------------------    
+    con = get_con()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
+        tmp.write(archivo_subido.getbuffer())
+        path = tmp.name
 
-INV = Inventarios(archivo_xlsx)  # <- como querías
+    con.execute("""
+        CREATE OR REPLACE TABLE inv AS
+        SELECT * FROM read_xlsx(?, header = true)
+    """, [path])
+    os.unlink(path)
+    return con
 
-if INV is None:
+#1.2 Uploader
+uploader_placeholder = st.empty()
+archivo_xlsx = uploader_placeholder.file_uploader(
+    "📤 Sube tu archivo de Inventarios", type=["xlsx"]
+)
+if archivo_xlsx is None:
     st.stop()
-
+uploader_placeholder.empty()
+con = Inventarios(archivo_xlsx)
 st.success("✅ Los inventarios fueron cargados con éxito.")
 
-#----------------------------------------------------------------------------------------
-
-
-st.sidebar.image("https://raw.githubusercontent.com/Edwinale20/Cobmp2/main/Fold/el-logo.png", width=170)
-st.sidebar.title("🔠  Filtros")
-
-opciones_division = ['Ninguno'] + list(INV['División'].unique())
-division = st.sidebar.selectbox('Seleccione la División', opciones_division)
-
-#opciones_pareto = ['Total artículos', 'Infaltables 80/20']
-#filtro_pareto = st.sidebar.selectbox('Filtrar Infaltables 80/20', opciones_pareto)
-
-opciones_plaza = ['Ninguno'] + list(INV['Plaza'].unique())
-plaza = st.sidebar.selectbox('Seleccione la Plaza', opciones_plaza)
-
-opciones_mercado = ['Ninguno'] + list(INV['Mercado'].unique())
-mercado = st.sidebar.selectbox('Seleccione el Mercado', opciones_mercado)
-
-opciones_categoria = ['Ninguno'] + list(INV['Categoría'].unique())
-categoria = st.sidebar.selectbox('Seleccione la Categoria', opciones_categoria)
-
-#opciones_proveedor = ['Ninguno'] + list(INV['PROVEEDOR'].unique())
-#proveedor = st.sidebar.selectbox('Seleccione el Proveedor', opciones_proveedor)
-
-articulo_busqueda = st.sidebar.text_input("Buscar Descripción:")
-
-
-
-# Filtrar por Proveedor
-if division == 'Ninguno':
-    df_venta_perdida_filtrada = INV
-else:
-    df_venta_perdida_filtrada = INV[INV['División'] == division]
-
-# Filtrar por Plaza
-if plaza != 'Ninguno':
-    df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['Plaza'] == plaza]
-
-# Filtrar por Mercado
-if mercado != 'Ninguno':
-    df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['Mercado'] == mercado]
-
-# Filtrar por Categoria
-if categoria != 'Ninguno':
-    df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['Categoría'] == categoria]
-
-if articulo_busqueda:
-    df_venta_perdida_filtrada = df_venta_perdida_filtrada[
-        df_venta_perdida_filtrada['Descripción'].str.contains(
-            articulo_busqueda, case=False, na=False
-        )
-    ]
-
-
-if articulo_busqueda:
-    df_venta_perdida_filtrada = df_venta_perdida_filtrada[
-        df_venta_perdida_filtrada['Descripción'].str.contains(articulo_busqueda, case=False, na=False)]
-    
-
-#----------------------------------------------------------------------------------------
-
+INV = con.execute("SELECT * FROM inv").df()
+ultima_fecha = INV["Fecha"].max() if "Fecha" in INV.columns else pd.Timestamp.today()
 @st.cache_data
-def cobertura_tabla(df):
-    
-    df.columns = df.columns.astype(str).str.strip()
 
-    TOTALES = {
-        "Coahuila (Saltillo)":85,"Coahuila (Torreón)":53,"Morelos":13,"México":392,
-        "Nuevo León":747,"Puebla":22,"Quintana Roo":105,"Tamaulipas (Matamoros)":79,
-        "Tamaulipas (Reynosa)":169,"Baja California (Tijuana)":89,"Baja California (Mexicali)":64,
-        "Baja California (Ensenada)":24,"Jalisco":182,"Yucatán":30,"Sonora (Hermosillo)":22,
-    }
-    ART = "Descripción"
-    PLZ = "Plaza"
-    TND = "Tienda"
-   
-    g = (df[[ART,PLZ,TND]].astype(str)
-         .groupby([ART,PLZ])[TND]
-         .nunique()
-         .reset_index(name="Tiendas_con_art"))
+#1.3
+def calcular_totales_plaza(inv):
+    """Universo de tiendas por Plaza, derivado del archivo (no del df filtrado)."""
+    return inv.groupby("Plaza")["Tienda"].nunique().to_dict()
 
-    tot = pd.DataFrame({PLZ:list(TOTALES.keys()), "Tiendas_totales":list(TOTALES.values())})
-    base = g.merge(tot, on=PLZ, how="left")
+TOTALES_PLAZA = calcular_totales_plaza(INV)
+# =========================
+# SECCIÓN 2 — Filtros sidebar
+# =========================
 
-   
-    if base["Tiendas_totales"].isna().any():
-        obs = df.groupby(PLZ)[TND].nunique().rename("obs").reset_index()
-        base = base.merge(obs, on=PLZ, how="left")
-        base["Tiendas_totales"] = base["Tiendas_totales"].fillna(base["obs"])
+#2.1: Filtros
+st.sidebar.markdown("---")
+st.markdown(f"📅 Datos actualizados al: **{pd.to_datetime(ultima_fecha).strftime('%d %b %Y')}**")
 
-    base["Cobertura %"] = (base["Tiendas_con_art"] / base["Tiendas_totales"] * 100).clip(0,100)
+def filtro(label, serie):
+    ops = ["Todos"] + sorted(serie.dropna().astype(str).unique().tolist())
+    return st.sidebar.selectbox(label, ops)
 
-    pivot = base.pivot(index=ART, columns=PLZ, values="Cobertura %")
+df = INV.copy()
 
-    # Guardar versión numérica para estilo
-    numeric = pivot.copy()
+for col, label in [("División","División"), ("Plaza","Plaza"),
+                   ("Mercado","Mercado"), ("Categoría","Categoría")]:
+    if col in df.columns:
+        sel = filtro(label, df[col])
+        if sel != "Todos":
+            df = df[df[col] == sel]
 
-    # Formato porcentaje bonito
-    pivot = pivot.round(0).astype("Int64").astype(str) + "%"
-    pivot = pivot.replace({"<NA>%": "Sin abasto"})
+#2.2 Catalogación al final, multiselect sobre el df ya filtrado
+if "Catalogación" in df.columns:
+    cats_disp = sorted(df["Catalogación"].dropna().astype(str).unique().tolist())
+    sel_cats = st.sidebar.multiselect("Catalogación", cats_disp, default=cats_disp)
+    if sel_cats:
+        df = df[df["Catalogación"].isin(sel_cats)]
 
-    return pivot, numeric
+# =========================
+# SECCIÓN 4 — Calculos y tabla
+# =========================
 
-
-
-# === USO CORRECTO ===
-pivot, numeric = cobertura_tabla(df_venta_perdida_filtrada)
-
-# Función para aplicar colores
-def color_sem(serie):
-    colors = []
-    for v in serie:
-        if pd.isna(v):  # Sin abasto
-            colors.append("background-color: lightgray; color: black;")
-        elif v < 40:
-            colors.append("background-color: #ff4d4d; color: white;")  # Rojo
-        elif v < 90:
-            colors.append("background-color: #ffd633; color: black;")  # Amarillo
-        else:
-            colors.append("background-color: #5cd65c; color: black;")  # Verde
-    return colors
-
-# Estilo sobre numeric
-styled = numeric.style.apply(color_sem, axis=0).format("{:.0f}%", na_rep="Sin abasto")
-
-# 👇 Mostrar con colores en Streamlit
-st.markdown(styled.to_html(), unsafe_allow_html=True)
-
-
-
-# === 1) Cobertura por artículo (global) ======================================
-def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 2):
-    pick = lambda names: next((c for c in names if c in df.columns), None)
-    ART = pick(["Descripción"])
-    PLZ = pick(["Plaza"])
-    TND = pick(["Tienda"])
-    INV_COL = pick(["Inventario", "Unidades Inventario", "Unidades"])
-   
-    d = df[[ART,PLZ,TND] + ([INV_COL] if INV_COL else [])].copy().astype({PLZ:str, TND:str, ART:str})
-    d["_pres"] = (pd.to_numeric(d[INV_COL], errors="coerce").fillna(0) > umbral_inv) if INV_COL else True
-
-    pres = d.groupby([ART,PLZ,TND], as_index=False)["_pres"].max()
-    num = pres.groupby([ART,PLZ])["_pres"].sum().reset_index(name="Tiendas_con_art")
-
-    tot = pd.DataFrame({PLZ:list(totales_por_plaza.keys()), "Tiendas_totales":list(totales_por_plaza.values())})
-    base = num.merge(tot, on=PLZ, how="left")
-
-    # Fallback si falta total para alguna plaza → usa tiendas observadas
-    if base["Tiendas_totales"].isna().any():
-        obs = pres.groupby(PLZ)[TND].nunique().rename("obs").reset_index()
-        base = base.merge(obs, on=PLZ, how="left")
-        base["Tiendas_totales"] = base["Tiendas_totales"].fillna(base["obs"])
-
-    # Cobertura GLOBAL del artículo (sumando plazas)
-    art = (base.groupby(ART)
-           .agg(Tiendas_con_art=("Tiendas_con_art","sum"),
-                Tiendas_totales=("Tiendas_totales","sum"))
-           .reset_index())
-    art["Cobertura_%"] = (art["Tiendas_con_art"]/art["Tiendas_totales"]*100).clip(0,100)
-    return art  # columnas: [ARTICULO, Tiendas_con_art, Tiendas_totales, Cobertura_%]
-
-
-
-TOTALES_PLAZA = {
-      "Coahuila (Saltillo)":85,"Coahuila (Torreón)":53,"Morelos":13,"México":392,
-      "Nuevo León":747,"Puebla":22,"Quintana Roo":105,"Tamaulipas (Matamoros)":79,
-      "Tamaulipas (Reynosa)":169,"Baja California (Tijuana)":89,"Baja California (Mexicali)":64,
-      "Baja California (Ensenada)":24,"Jalisco":182,"Yucatán":30,"Sonora (Hermosillo)":22,
-}
-
-
-
-
+#4.2: Tabla de cobertura
 @st.cache_data
-def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
-    pick = lambda names: next((c for c in names if c in df.columns), None)
-    ART = pick(["Descripción"])
-    PLZ = pick(["Plaza"])
-    TND = pick(["Tienda"])
-    DIV = pick(["División"])
-    INV_COL = pick(["Inventario", "Unidades Inventario", "Unidades"])
+def cobertura_tabla(df, totales):              # ← quita el default =TOTALES_PLAZA
+    base = (df.groupby(["Descripción", "Plaza"])["Tienda"]
+              .nunique()
+              .reset_index(name="tiendas"))
+    base["cobertura"] = (base["tiendas"] / base["Plaza"].map(totales) * 100).clip(0, 100)
+    return base.pivot(index="Descripción", columns="Plaza", values="cobertura")
 
-    d = df[[ART,PLZ,TND,DIV] + ([INV_COL] if INV_COL else [])].copy().astype({PLZ:str, TND:str, ART:str, DIV:str})
-    d["_pres"] = (pd.to_numeric(d[INV_COL], errors="coerce").fillna(0) > umbral_inv) if INV_COL else True
-
-    pres = d.groupby([DIV,ART,PLZ,TND], as_index=False)["_pres"].max()
-
-    # Número de tiendas por artículo dentro de cada división
-    num = pres.groupby([DIV,ART,PLZ])["_pres"].sum().reset_index(name="Tiendas_con_art")
-    tot = pd.DataFrame({PLZ:list(totales_por_plaza.keys()), "Tiendas_totales":list(totales_por_plaza.values())})
-    base = num.merge(tot, on=PLZ, how="left")
-
-    base["Cobertura_%"] = (base["Tiendas_con_art"]/base["Tiendas_totales"]*100).clip(0,100)
-
-    # 🔑 Cobertura promedio por división (promedio de artículos, no suma global)
-    resumen = base.groupby(DIV)["Cobertura_%"].mean().reset_index()
-
-    # renombramos para vista
-    resumen = resumen.rename(columns={"Cobertura_%":"Cobertura (%)"})
-
-    return resumen
-
-tabla_div = cobertura_por_division(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
-
-# 🎨 Estilo semáforo bonito
-def color(val):
-    try:
-        v = float(val)
-    except:
-        return "background-color: lightgray; color: black; text-align:center;"
-    if v >= 90:
-        return "background-color: #B9F6CA; text-align:center; font-weight:bold;"
-    if v >= 80:
-        return "background-color: #FFF59D; text-align:center; font-weight:bold;"
-    return "background-color: #EF9A9A; text-align:center; font-weight:bold;"
-
-styled = (
-    tabla_div.style
-        .format({"Cobertura (%)": "{:.1f}%"})
-        .applymap(color, subset=["Cobertura (%)"])
-        .set_properties(**{"text-align": "center", "border": "1px solid #ddd", "padding": "4px"})
-)
-
-st.dataframe(styled, use_container_width=True)
-
+numeric = cobertura_tabla(df, TOTALES_PLAZA)   # ← pásalo explícito
