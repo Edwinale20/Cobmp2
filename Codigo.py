@@ -41,7 +41,7 @@ def Inventarios(archivo_subido):
         path = tmp.name
     con.execute("""
         CREATE OR REPLACE TABLE inv AS
-        SELECT * FROM read_xlsx(?, header = true)
+        SELECT * FROM read_xlsx(?, header = true, range = 'A3:Z1048576')
     """, [path])
     os.unlink(path)
     return con
