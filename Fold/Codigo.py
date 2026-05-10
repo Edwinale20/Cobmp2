@@ -125,7 +125,3 @@ styled = (numeric.style
           .format("{:.0f}%", na_rep="Sin abasto"))
 
 st.markdown(styled.to_html(), unsafe_allow_html=True)
-st.write("Filas en df:", len(df))
-st.write("Plazas únicas en df:", df["Plaza"].unique().tolist() if "Plaza" in df.columns else "no existe")
-st.write("TOTALES_PLAZA:", TOTALES_PLAZA)
-st.write("Columnas df:", df.columns.tolist())
