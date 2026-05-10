@@ -42,8 +42,7 @@ def Inventarios(archivo_subido):
     """, [path])
     os.unlink(path)
     return con
-
-#1.2 Uploader
+# 1.2 Uploader
 uploader_placeholder = st.empty()
 archivo_xlsx = uploader_placeholder.file_uploader(
     "📤 Sube tu archivo de Inventarios", type=["xlsx"]
@@ -54,24 +53,29 @@ uploader_placeholder.empty()
 con = Inventarios(archivo_xlsx)
 st.success("✅ Los inventarios fueron cargados con éxito.")
 
-INV = con.execute("SELECT * FROM inv").df()
-COLUMNA_FECHA = "Día Transacción"   # 👈 cámbiala aquí cuando quieras
+# 1.3 Cargar INV (cacheado)
+@st.cache_data
+def cargar_INV(archivo_nombre, _con):
+    df = _con.execute("SELECT * FROM inv").df()
+    df = df.rename(columns={df.columns[8]: "Descripción"})
+    df = df.drop(columns=[c for c in df.columns if str(c).lower() == "metrics"],
+                 errors="ignore")
+    return df
+
+INV = cargar_INV(archivo_xlsx.name, con)   # 👈 INV nace aquí
+
+# 1.4 Fecha
+COLUMNA_FECHA = "Día Transacción"
 ultima_fecha = (
     pd.to_datetime(INV[COLUMNA_FECHA], errors="coerce").max()
     if COLUMNA_FECHA in INV.columns
     else pd.Timestamp.today()
 )
 
-
-INV = INV.rename(columns={INV.columns[8]: "Descripción"})
-INV = INV.drop(columns=[c for c in INV.columns if str(c).lower() == "metrics"], errors="ignore")
-#1.3
-@st.cache_data
-def calcular_totales_plaza(inv):
-    """Universo de tiendas por Plaza, derivado del archivo (no del df filtrado)."""
-    return inv.groupby("Plaza")["Tienda"].nunique().to_dict()
-
+# 1.5 Universo de tiendas (sigue igual)
 TOTALES_PLAZA = calcular_totales_plaza(INV)
+
+
 # =========================
 # SECCIÓN 2 — Filtros sidebar
 # =========================
