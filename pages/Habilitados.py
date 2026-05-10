@@ -114,7 +114,6 @@ nivel = st.sidebar.radio("Vista por:", ["División", "Plaza"], horizontal=True)
 
 # Tabla principal
 TOT = HAB.groupby(nivel)["Tienda"].nunique().to_dict()
-tabla = pct_hab(df, TOT, HAB_COL, nivel)
 
 #---------------------------------------------------------------------------------------- 
 #4: Tabla de habilitados
@@ -125,6 +124,7 @@ def pct_hab(df, _tot, hab_col, nivel):
     base["pct"] = (base["t"] / base[nivel].map(_tot) * 100).clip(0, 100)
     return base.pivot(index="Descripción", columns=nivel, values="pct")
 
+tabla = pct_hab(df, TOT, HAB_COL, nivel)
 
 st.subheader(f"📊 % Habilitados por {nivel}")
 
