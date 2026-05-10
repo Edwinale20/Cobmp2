@@ -97,7 +97,7 @@ def filtro(label, serie):
     ops = ["Todos"] + sorted(serie.dropna().astype(str).unique().tolist())
     return st.sidebar.selectbox(label, ops)
 
-df = HAB.copy()
+df = HAB
 for col in ["División", "Plaza", "Categoría"]:
     if col in df.columns:
         sel = filtro(col, df[col])
