@@ -13,7 +13,7 @@ import io
 import tempfile
 #---------------------------------------------------------------------------------------- 
 st.set_page_config(page_title="Habilitados Marca Propia", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
-st.title("🟢🟠🟡 Reporte de Habilitados | Marca Propia 🏪")
+st.title("🟢 Reporte de Habilitados | Marca Propia 🏪")
 st.markdown("✅ Arrastra aquí el archivo de habilitados, por división")
 st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas reiniciar todo solo da refresh a la página")
 kpi_top = st.container()
@@ -90,3 +90,7 @@ tabla = pct_hab(df, TOT_DIV)
 styled = tabla.style.apply(color_sem, axis=0).format("{:.0f}%", na_rep="No habilitado")
 st.markdown(f"<div style='overflow:auto; max-height:600px'>{styled.to_html()}</div>",
             unsafe_allow_html=True)
+
+
+st.write("Columnas detectadas:", HAB.columns.tolist())
+st.dataframe(HAB.head(3))
