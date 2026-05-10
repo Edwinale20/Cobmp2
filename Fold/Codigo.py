@@ -87,7 +87,7 @@ TOTALES_PLAZA = calcular_totales_plaza(INV)
 
 #2.1: Filtros
 st.sidebar.markdown("---")
-st.markdown(f"📅 Datos actualizados al: **{pd.to_datetime(ultima_fecha).strftime('%d %b %Y')}**")
+st.markdown(f"📅 Fecha de inventarios: **{pd.to_datetime(ultima_fecha).strftime('%d %b %Y')}**")
 
 def filtro(label, serie):
     ops = ["Todos"] + sorted(serie.dropna().astype(str).unique().tolist())
