@@ -89,6 +89,13 @@ for col in ["División", "Plaza", "Categoría"]:
         if sel != "Todos":
             df = df[df[col] == sel]
 
+# 👇 nuevo: multiselect Descripción al final
+if "Descripción" in df.columns:
+    desc_disp = sorted(df["Descripción"].dropna().astype(str).unique().tolist())
+    sel_desc = st.sidebar.multiselect("Descripción", desc_disp)
+    if sel_desc:
+        df = df[df["Descripción"].isin(sel_desc)]
+        
 # Tabla principal
 TOT_DIV = HAB.groupby("División")["Tienda"].nunique().to_dict()
 
