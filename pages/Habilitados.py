@@ -67,21 +67,29 @@ def cargar(archivos_info):
         dfs.append(d)
     return pd.concat(dfs, ignore_index=True)
 
-#1.3: St.Uploader
-archivos = st.file_uploader("📤 Sube los 4 archivos de Habilitados",
-                            type=["xlsx"], accept_multiple_files=True)
-if not archivos:
-    st.stop()
+#1.3: Uploader + persistir en session_state
+if "HAB" not in st.session_state:
+    archivos = st.file_uploader(
+        "📤 Sube los 4 archivos de Habilitados",
+        type=["xlsx"], accept_multiple_files=True
+    )
+    if not archivos:
+        st.stop()
 
-HAB = cargar([(a.name, a.getbuffer().tobytes()) for a in archivos])
+    HAB = cargar([(a.name, a.getbuffer().tobytes()) for a in archivos])
+    HAB_COL = next((c for c in HAB.columns if str(c).startswith("Habilitar")), None)
+    if not HAB_COL:
+        st.error("No se encontró la columna 'Habilitar Pedir'")
+        st.stop()
 
-HAB_COL = next((c for c in HAB.columns if str(c).startswith("Habilitar")), None)
-if not HAB_COL:
-    st.error("No se encontró la columna 'Habilitar Pedir'")
-    st.stop()
+    st.session_state["HAB"] = HAB
+    st.session_state["HAB_COL"] = HAB_COL
 
-st.success(f"✅ {len(archivos)} archivo(s) — {len(HAB):,} filas")
 
+#1.4: Recuperar de session_state
+HAB = st.session_state["HAB"]
+HAB_COL = st.session_state["HAB_COL"]
+st.success(f"✅ {len(HAB):,} filas cargadas")
 
 #---------------------------------------------------------------------------------------- 
 #2.1: Filtros
