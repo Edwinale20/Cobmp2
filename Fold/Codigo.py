@@ -118,6 +118,7 @@ def color_sem(serie):
     return colors
     
 #4.2: Tabla de cobertura
+@st.cache_data
 def cobertura_tabla(df, totales):              # ← quita el default =TOTALES_PLAZA
     base = (df.groupby(["Descripción", "Plaza"])["Tienda"]
               .nunique()
