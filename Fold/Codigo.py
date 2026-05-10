@@ -13,7 +13,7 @@ import io
 import tempfile
 #---------------------------------------------------------------------------------------- 
 st.set_page_config(page_title="Cobertura Marca Propia", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
-st.title("📊 Reporte de Cobertura | Marca Propia 🏪")
+st.title("📊 Reporte de Cobertura y Habilitados | Marca Propia 🏪")
 st.markdown("✅ Arrastra aquí el archivo de inventarios")
 st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas reiniciar todo solo da refresh a la página")
 kpi_top = st.container()
