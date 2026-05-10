@@ -61,6 +61,8 @@ st.success(f"✅ {len(archivos)} archivo(s) — {len(HAB):,} filas")
 def filtro(label, serie):
     ops = ["Todos"] + sorted(serie.dropna().astype(str).unique().tolist())
     return st.sidebar.selectbox(label, ops)
+st.write("Columnas detectadas:", HAB.columns.tolist())
+st.dataframe(HAB.head(3))
 
 df = HAB.copy()
 for col in ["División", "Plaza", "Categoría"]:
@@ -92,5 +94,3 @@ st.markdown(f"<div style='overflow:auto; max-height:600px'>{styled.to_html()}</d
             unsafe_allow_html=True)
 
 
-st.write("Columnas detectadas:", HAB.columns.tolist())
-st.dataframe(HAB.head(3))
