@@ -18,6 +18,13 @@ st.markdown("✅ Arrastra aquí el archivo de habilitados, por división")
 st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas reiniciar todo solo da refresh a la página")
 kpi_top = st.container()
 
+
+def color_sem(s):
+    return ["background-color:#ff4d4d;color:white;" if pd.notna(v) and v < 40
+            else "background-color:#ffd633;" if pd.notna(v) and v < 95
+            else "background-color:#5cd65c;" if pd.notna(v)
+            else "background-color:lightgray;" for v in s]
+
 #---------------------------------------------------------------------------------------- 
 #1: Mapping Plaza → División
 PLAZA_DIV = {
@@ -78,7 +85,6 @@ st.success(f"✅ {len(archivos)} archivo(s) — {len(HAB):,} filas")
 
 #---------------------------------------------------------------------------------------- 
 #2.1: Filtros
-# Filtros
 def filtro(label, serie):
     ops = ["Todos"] + sorted(serie.dropna().astype(str).unique().tolist())
     return st.sidebar.selectbox(label, ops)
@@ -89,8 +95,6 @@ for col in ["División", "Plaza", "Categoría"]:
         sel = filtro(col, df[col])
         if sel != "Todos":
             df = df[df[col] == sel]
-
-# 👇 nuevo: multiselect Descripción al final
 if "Descripción" in df.columns:
     desc_disp = sorted(df["Descripción"].dropna().astype(str).unique().tolist())
     sel_desc = st.sidebar.multiselect("Descripción", desc_disp)
@@ -109,11 +113,6 @@ def pct_hab(df, _tot, hab_col):
     base["pct"] = (base["t"] / base["División"].map(_tot) * 100).clip(0, 100)
     return base.pivot(index="Descripción", columns="División", values="pct")
 
-def color_sem(s):
-    return ["background-color:#ff4d4d;color:white;" if pd.notna(v) and v < 40
-            else "background-color:#ffd633;" if pd.notna(v) and v < 95
-            else "background-color:#5cd65c;" if pd.notna(v)
-            else "background-color:lightgray;" for v in s]
 
 st.subheader("📊 % Habilitados por División")
 tabla = pct_hab(df, TOT_DIV, HAB_COL)
