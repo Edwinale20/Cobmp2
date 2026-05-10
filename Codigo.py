@@ -160,6 +160,8 @@ styled = (numeric.style
           .apply(color_sem, axis=0)
           .format("{:.0f}%", na_rep="Sin abasto"))
 
+st.subheader("📊 % Habilitados por División")
+
 st.markdown(
     f"<div style='overflow:auto; max-height:700px'>{styled.to_html()}</div>",
     unsafe_allow_html=True
