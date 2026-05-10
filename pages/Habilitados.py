@@ -66,7 +66,10 @@ HAB = HAB.rename(columns={
     "Unnamed: 8":  "Categoría",
     "Unnamed: 10": "Descripción",
 })
-
+HAB_COL = next((c for c in HAB.columns if str(c).startswith("Habilitar")), None)
+if not HAB_COL:
+    st.error("No se encontró la columna 'Habilitar Pedir'")
+    st.stop()
 
 st.success(f"✅ {len(archivos)} archivo(s) — {len(HAB):,} filas")
 
