@@ -1,6 +1,5 @@
 import pandas as pd
 import duckdb 
-from duckdb import excel
 import glob
 import os
 import streamlit as st
