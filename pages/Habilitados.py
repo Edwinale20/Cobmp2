@@ -19,8 +19,7 @@ st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas rei
 kpi_top = st.container()
 
 #---------------------------------------------------------------------------------------- 
-
-# Mapping Plaza → División
+#1: Mapping Plaza → División
 PLAZA_DIV = {
     "Tamaulipas (Reynosa)": "Coahuila-Tamaulipas",
     "Tamaulipas (Matamoros)": "Coahuila-Tamaulipas",
@@ -36,7 +35,7 @@ PLAZA_DIV = {
     "Sonora (Hermosillo)": "Pacífico",
     "Nuevo León": "Nuevo León",
 }
-
+#1.2: Función de lectura de archivos
 @st.cache_data
 def cargar(archivos_info):
     dfs = []
@@ -61,12 +60,11 @@ def cargar(archivos_info):
         dfs.append(d)
     return pd.concat(dfs, ignore_index=True)
 
-
+#1.3: St.Uploader
 archivos = st.file_uploader("📤 Sube los 4 archivos de Habilitados",
                             type=["xlsx"], accept_multiple_files=True)
 if not archivos:
     st.stop()
-
 
 HAB = cargar([(a.name, a.getbuffer().tobytes()) for a in archivos])
 
@@ -77,6 +75,9 @@ if not HAB_COL:
 
 st.success(f"✅ {len(archivos)} archivo(s) — {len(HAB):,} filas")
 
+
+#---------------------------------------------------------------------------------------- 
+#2.1: Filtros
 # Filtros
 def filtro(label, serie):
     ops = ["Todos"] + sorted(serie.dropna().astype(str).unique().tolist())
@@ -99,6 +100,8 @@ if "Descripción" in df.columns:
 # Tabla principal
 TOT_DIV = HAB.groupby("División")["Tienda"].nunique().to_dict()
 
+#---------------------------------------------------------------------------------------- 
+#4: Tabla de habilitados
 @st.cache_data
 def pct_hab(df, _tot, hab_col):
     hab = df[df[hab_col] == 1]
@@ -108,7 +111,7 @@ def pct_hab(df, _tot, hab_col):
 
 def color_sem(s):
     return ["background-color:#ff4d4d;color:white;" if pd.notna(v) and v < 40
-            else "background-color:#ffd633;" if pd.notna(v) and v < 90
+            else "background-color:#ffd633;" if pd.notna(v) and v < 95
             else "background-color:#5cd65c;" if pd.notna(v)
             else "background-color:lightgray;" for v in s]
 
