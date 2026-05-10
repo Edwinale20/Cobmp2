@@ -55,14 +55,25 @@ if not archivos:
     st.stop()
 
 HAB = cargar([(a.name, a.getbuffer().tobytes()) for a in archivos])
+HAB = HAB.drop(columns=[
+    "Plaza", "Campo", "Categoría", "Indicadores", "Unnamed: 11"
+], errors="ignore")
+
+# Rename Unnamed → nombre real
+HAB = HAB.rename(columns={
+    "Unnamed: 2":  "Plaza",
+    "Unnamed: 4":  "Campo",
+    "Unnamed: 8":  "Categoría",
+    "Unnamed: 10": "Descripción",
+})
+
+
 st.success(f"✅ {len(archivos)} archivo(s) — {len(HAB):,} filas")
 
 # Filtros
 def filtro(label, serie):
     ops = ["Todos"] + sorted(serie.dropna().astype(str).unique().tolist())
     return st.sidebar.selectbox(label, ops)
-st.write("Columnas detectadas:", HAB.columns.tolist())
-st.dataframe(HAB.head(3))
 
 df = HAB.copy()
 for col in ["División", "Plaza", "Categoría"]:
@@ -75,8 +86,8 @@ for col in ["División", "Plaza", "Categoría"]:
 TOT_DIV = HAB.groupby("División")["Tienda"].nunique().to_dict()
 
 @st.cache_data
-def pct_hab(df, _tot):
-    hab = df[df["Habilitar Pedir"] == 1]
+def pct_hab(df, _tot, hab_col):
+    hab = df[df[hab_col] == 1]
     base = hab.groupby(["Descripción", "División"])["Tienda"].nunique().reset_index(name="t")
     base["pct"] = (base["t"] / base["División"].map(_tot) * 100).clip(0, 100)
     return base.pivot(index="Descripción", columns="División", values="pct")
