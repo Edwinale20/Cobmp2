@@ -99,7 +99,9 @@ def color_sem(s):
             else "background-color:lightgray;" for v in s]
 
 st.subheader("📊 % Habilitados por División")
-tabla = pct_hab(df, TOT_DIV)
+tabla = pct_hab(df, TOT_DIV, HAB_COL)
+
+
 styled = tabla.style.apply(color_sem, axis=0).format("{:.0f}%", na_rep="No habilitado")
 st.markdown(f"<div style='overflow:auto; max-height:600px'>{styled.to_html()}</div>",
             unsafe_allow_html=True)
