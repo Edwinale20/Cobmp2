@@ -1,3 +1,3 @@
-import streamit
+import streamlit
 
 st.write("Hola")
