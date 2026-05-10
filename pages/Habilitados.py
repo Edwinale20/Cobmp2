@@ -108,22 +108,25 @@ if "Descripción" in df.columns:
     sel_desc = st.sidebar.multiselect("Descripción", desc_disp)
     if sel_desc:
         df = df[df["Descripción"].isin(sel_desc)]
-        
+
+st.sidebar.markdown("---")
+nivel = st.sidebar.radio("Vista por:", ["División", "Plaza"], horizontal=True)
+
 # Tabla principal
-TOT_DIV = HAB.groupby("División")["Tienda"].nunique().to_dict()
+TOT = HAB.groupby(nivel)["Tienda"].nunique().to_dict()
+tabla = pct_hab(df, TOT, HAB_COL, nivel)
 
 #---------------------------------------------------------------------------------------- 
 #4: Tabla de habilitados
 @st.cache_data
-def pct_hab(df, _tot, hab_col):
+def pct_hab(df, _tot, hab_col, nivel):
     hab = df[df[hab_col] == 1]
-    base = hab.groupby(["Descripción", "División"])["Tienda"].nunique().reset_index(name="t")
-    base["pct"] = (base["t"] / base["División"].map(_tot) * 100).clip(0, 100)
-    return base.pivot(index="Descripción", columns="División", values="pct")
+    base = hab.groupby(["Descripción", nivel])["Tienda"].nunique().reset_index(name="t")
+    base["pct"] = (base["t"] / base[nivel].map(_tot) * 100).clip(0, 100)
+    return base.pivot(index="Descripción", columns=nivel, values="pct")
 
 
-st.subheader("📊 % Habilitados por División")
-tabla = pct_hab(df, TOT_DIV, HAB_COL)
+st.subheader(f"📊 % Habilitados por {nivel}")
 
 styled = tabla.style.apply(color_sem, axis=0).format("{:.0f}%", na_rep="No habilitado")
 st.markdown(f"<div style='overflow:auto; max-height:600px'>{styled.to_html()}</div>",
