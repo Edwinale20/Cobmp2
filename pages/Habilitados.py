@@ -43,29 +43,33 @@ def cargar(archivos_info):
     for nombre, contenido in archivos_info:
         d = pd.read_excel(io.BytesIO(contenido), header=5)
         d.columns = d.columns.astype(str).str.strip()
+
+        # 👇 NUEVO: cleanup ANTES de detectar división
+        d = d.drop(columns=["Plaza", "Campo", "Categoría", "Indicadores", "Unnamed: 11"],
+                   errors="ignore")
+        d = d.rename(columns={
+            "Unnamed: 2":  "Plaza",
+            "Unnamed: 4":  "Campo",
+            "Unnamed: 8":  "Categoría",
+            "Unnamed: 10": "Descripción",
+        })
+
+        # Ahora sí, con la Plaza real
         plazas = d["Plaza"].dropna().unique() if "Plaza" in d.columns else []
         divs = {PLAZA_DIV.get(p) for p in plazas} - {None}
         d["División"] = list(divs)[0] if len(divs) == 1 else "Desconocida"
         dfs.append(d)
     return pd.concat(dfs, ignore_index=True)
 
+
 archivos = st.file_uploader("📤 Sube los 4 archivos de Habilitados",
                             type=["xlsx"], accept_multiple_files=True)
 if not archivos:
     st.stop()
 
-HAB = cargar([(a.name, a.getbuffer().tobytes()) for a in archivos])
-HAB = HAB.drop(columns=[
-    "Plaza", "Campo", "Categoría", "Indicadores", "Unnamed: 11"
-], errors="ignore")
 
-# Rename Unnamed → nombre real
-HAB = HAB.rename(columns={
-    "Unnamed: 2":  "Plaza",
-    "Unnamed: 4":  "Campo",
-    "Unnamed: 8":  "Categoría",
-    "Unnamed: 10": "Descripción",
-})
+HAB = cargar([(a.name, a.getbuffer().tobytes()) for a in archivos])
+
 HAB_COL = next((c for c in HAB.columns if str(c).startswith("Habilitar")), None)
 if not HAB_COL:
     st.error("No se encontró la columna 'Habilitar Pedir'")
