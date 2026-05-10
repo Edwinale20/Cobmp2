@@ -19,41 +19,35 @@ st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas rei
 kpi_top = st.container()
 
 #----------------------------------------------------------------------------------------   
-#1: Creación de Excel a DuckDB
+# ============================================
+# SECCIÓN 1 — Carga y limpieza
+# ============================================
+
+# 1.1 Conexión DuckDB
 @st.cache_resource
 def get_con():
     con = duckdb.connect(":memory:")
     con.execute("INSTALL excel; LOAD excel;")
     return con
 
-# 1.1: Cargar inventarios a DuckDB
+
+# 1.2 Cargar Excel → DuckDB
 def Inventarios(archivo_subido):
     if archivo_subido is None:
         return None
-    
     con = get_con()
     with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
         tmp.write(archivo_subido.getbuffer())
         path = tmp.name
-
     con.execute("""
         CREATE OR REPLACE TABLE inv AS
         SELECT * FROM read_xlsx(?, header = true)
     """, [path])
     os.unlink(path)
     return con
-# 1.2 Uploader
-uploader_placeholder = st.empty()
-archivo_xlsx = uploader_placeholder.file_uploader(
-    "📤 Sube tu archivo de Inventarios", type=["xlsx"]
-)
-if archivo_xlsx is None:
-    st.stop()
-uploader_placeholder.empty()
-con = Inventarios(archivo_xlsx)
-st.success("✅ Los inventarios fueron cargados con éxito.")
 
-# 1.3 Cargar INV (cacheado)
+
+# 1.3 DuckDB → DataFrame con limpieza (rename + drop Metrics)
 @st.cache_data
 def cargar_INV(archivo_nombre, _con):
     df = _con.execute("SELECT * FROM inv").df()
@@ -62,24 +56,42 @@ def cargar_INV(archivo_nombre, _con):
                  errors="ignore")
     return df
 
-INV = cargar_INV(archivo_xlsx.name, con)   # 👈 INV nace aquí
 
-# 1.4 Fecha
+# 1.4 Universo de tiendas por Plaza
+@st.cache_data
+def calcular_totales_plaza(inv):
+    """Tiendas únicas por Plaza, derivado del archivo (no del df filtrado)."""
+    return inv.groupby("Plaza")["Tienda"].nunique().to_dict()
+
+
+# 1.5 Uploader + persistir en session_state
+if "INV" not in st.session_state:
+    uploader_placeholder = st.empty()
+    archivo_xlsx = uploader_placeholder.file_uploader(
+        "📤 Sube tu archivo de Inventarios", type=["xlsx"]
+    )
+    if archivo_xlsx is None:
+        st.stop()
+    uploader_placeholder.empty()
+
+    con = Inventarios(archivo_xlsx)
+    INV = cargar_INV(archivo_xlsx.name, con)
+
+    st.session_state["INV"] = INV
+    st.session_state["TOTALES_PLAZA"] = calcular_totales_plaza(INV)
+
+
+# 1.6 Recuperar de session_state + fecha
+INV = st.session_state["INV"]
+TOTALES_PLAZA = st.session_state["TOTALES_PLAZA"]
+st.success("✅ Inventarios cargados")
+
 COLUMNA_FECHA = "Día Transacción"
 ultima_fecha = (
     pd.to_datetime(INV[COLUMNA_FECHA], errors="coerce").max()
     if COLUMNA_FECHA in INV.columns
     else pd.Timestamp.today()
 )
-
-# 1.5 Universo de tiendas (sigue igual)
-@st.cache_data
-def calcular_totales_plaza(inv):
-    """Universo de tiendas por Plaza, derivado del archivo (no del df filtrado)."""
-    return inv.groupby("Plaza")["Tienda"].nunique().to_dict()
-
-TOTALES_PLAZA = calcular_totales_plaza(INV)
-
 
 # =========================
 # SECCIÓN 2 — Filtros sidebar
