@@ -79,18 +79,20 @@ def filtro(label, serie):
 
 df = INV.copy()
 
-# Descripción multiselect
-if "Descripción" in df.columns:
-    desc_disp = sorted(df["Descripción"].dropna().astype(str).unique().tolist())
-    sel_desc = st.sidebar.multiselect("Descripción", desc_disp)
-    if sel_desc:
-        df = df[df["Descripción"].isin(sel_desc)]
+
         
 for col, label in [("Categoría","Categoría"), ("División","División"), ("Plaza","Plaza"), ("Mercado","Mercado")]:
     if col in df.columns:
         sel = filtro(label, df[col])
         if sel != "Todos":
             df = df[df[col] == sel]
+
+# Descripción multiselect
+if "Descripción" in df.columns:
+    desc_disp = sorted(df["Descripción"].dropna().astype(str).unique().tolist())
+    sel_desc = st.sidebar.multiselect("Descripción", desc_disp)
+    if sel_desc:
+        df = df[df["Descripción"].isin(sel_desc)]
 
 #2.2 Catalogación al final, multiselect sobre el df ya filtrado
 if "Catalogación" in df.columns:
