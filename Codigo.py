@@ -68,7 +68,7 @@ def calcular_totales_plaza(inv):
 if "INV" not in st.session_state:
     uploader_placeholder = st.empty()
     archivo_xlsx = uploader_placeholder.file_uploader(
-        "📤 Sube tu archivo de Inventarios", type=["xlsx"]
+        "📤 Sube el archivo de Inventarios", type=["xlsx"]
     )
     if archivo_xlsx is None:
         st.stop()
