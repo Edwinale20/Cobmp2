@@ -124,4 +124,4 @@ styled = (numeric.style
           .apply(color_sem, axis=0)
           .format("{:.0f}%", na_rep="Sin abasto"))
 
-st.markdown(styled.to_html(), unsafe_allow_html=True)
+st.dataframe(styled, use_container_width=True, height=600)
