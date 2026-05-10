@@ -123,4 +123,7 @@ styled = (numeric.style
           .apply(color_sem, axis=0)
           .format("{:.0f}%", na_rep="Sin abasto"))
 
-st.dataframe(styled, use_container_width=True, height=600)
+st.markdown(
+    f"<div style='overflow:auto; max-height:700px'>{styled.to_html()}</div>",
+    unsafe_allow_html=True
+)
