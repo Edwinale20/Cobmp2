@@ -79,6 +79,13 @@ def filtro(label, serie):
 
 df = INV.copy()
 
+# Descripción multiselect
+if "Descripción" in df.columns:
+    desc_disp = sorted(df["Descripción"].dropna().astype(str).unique().tolist())
+    sel_desc = st.sidebar.multiselect("Descripción", desc_disp)
+    if sel_desc:
+        df = df[df["Descripción"].isin(sel_desc)]
+        
 for col, label in [("División","División"), ("Plaza","Plaza"),
                    ("Mercado","Mercado"), ("Categoría","Categoría")]:
     if col in df.columns:
