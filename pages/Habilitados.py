@@ -99,7 +99,7 @@ def color_sem(s):
             else "background-color:lightgray;" for v in s]
 
 st.subheader("📊 % Habilitados por División")
-tabla = pct_hab(df, TOT_DIV, HAB_COL)
+tabla = pct_hab(df, TOT_DIV, HAB)
 
 
 styled = tabla.style.apply(color_sem, axis=0).format("{:.0f}%", na_rep="No habilitado")
