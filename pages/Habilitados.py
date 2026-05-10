@@ -70,7 +70,7 @@ def cargar(archivos_info):
 #1.3: Uploader + persistir en session_state
 if "HAB" not in st.session_state:
     archivos = st.file_uploader(
-        "📤 Sube los 4 archivos de Habilitados",
+        "📤 Sube o arrastra los 4 archivos de Habilitados",
         type=["xlsx"], accept_multiple_files=True
     )
     if not archivos:
