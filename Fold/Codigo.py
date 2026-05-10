@@ -56,7 +56,7 @@ st.success("✅ Los inventarios fueron cargados con éxito.")
 
 INV = con.execute("SELECT * FROM inv").df()
 ultima_fecha = INV["Fecha"].max() if "Fecha" in INV.columns else pd.Timestamp.today()
-INV.columns.values[8] = "Descripción"
+INV = INV.rename(columns={INV.columns[8]: "Descripción"})
 INV = INV.drop(columns=[c for c in INV.columns if str(c).lower() == "metrics"], errors="ignore")
 #1.3
 @st.cache_data
@@ -111,7 +111,6 @@ def color_sem(serie):
     return colors
     
 #4.2: Tabla de cobertura
-@st.cache_data
 def cobertura_tabla(df, totales):              # ← quita el default =TOTALES_PLAZA
     base = (df.groupby(["Descripción", "Plaza"])["Tienda"]
               .nunique()
