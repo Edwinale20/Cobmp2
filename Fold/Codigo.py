@@ -73,6 +73,11 @@ ultima_fecha = (
 )
 
 # 1.5 Universo de tiendas (sigue igual)
+@st.cache_data
+def calcular_totales_plaza(inv):
+    """Universo de tiendas por Plaza, derivado del archivo (no del df filtrado)."""
+    return inv.groupby("Plaza")["Tienda"].nunique().to_dict()
+
 TOTALES_PLAZA = calcular_totales_plaza(INV)
 
 
