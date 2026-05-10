@@ -120,3 +120,8 @@ def cobertura_tabla(df, totales):              # ← quita el default =TOTALES_P
     return base.pivot(index="Descripción", columns="Plaza", values="cobertura")
 
 numeric = cobertura_tabla(df, TOTALES_PLAZA)   # ← pásalo explícito
+styled = (numeric.style
+          .apply(color_sem, axis=0)
+          .format("{:.0f}%", na_rep="Sin abasto"))
+
+st.markdown(styled.to_html(), unsafe_allow_html=True)
