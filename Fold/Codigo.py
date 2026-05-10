@@ -86,8 +86,7 @@ if "Descripción" in df.columns:
     if sel_desc:
         df = df[df["Descripción"].isin(sel_desc)]
         
-for col, label in [("División","División"), ("Plaza","Plaza"),
-                   ("Mercado","Mercado"), ("Categoría","Categoría")]:
+for col, label in [("Categoría","Categoría"), ("División","División"), ("Plaza","Plaza"), ("Mercado","Mercado")]:
     if col in df.columns:
         sel = filtro(label, df[col])
         if sel != "Todos":
