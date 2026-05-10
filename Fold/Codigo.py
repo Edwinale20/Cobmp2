@@ -55,7 +55,14 @@ con = Inventarios(archivo_xlsx)
 st.success("✅ Los inventarios fueron cargados con éxito.")
 
 INV = con.execute("SELECT * FROM inv").df()
-ultima_fecha = INV["Fecha"].max() if "Fecha" in INV.columns else pd.Timestamp.today()
+COLUMNA_FECHA = "Día Transacción"   # 👈 cámbiala aquí cuando quieras
+ultima_fecha = (
+    pd.to_datetime(INV[COLUMNA_FECHA], errors="coerce").max()
+    if COLUMNA_FECHA in INV.columns
+    else pd.Timestamp.today()
+)
+
+
 INV = INV.rename(columns={INV.columns[8]: "Descripción"})
 INV = INV.drop(columns=[c for c in INV.columns if str(c).lower() == "metrics"], errors="ignore")
 #1.3
