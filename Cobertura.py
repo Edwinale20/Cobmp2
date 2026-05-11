@@ -110,12 +110,12 @@ df = INV.copy()
 
 
         
-for col, label in [("Categoría","Categoría"), ("División","División"), ("Plaza","Plaza"), ("Mercado","Mercado")]:
+for col, label in [ ("División","División"), ("Plaza","Plaza"), ("Mercado","Mercado"),("Categoría","Categoría"),:
     if col in df.columns:
         sel = filtro(label, df[col])
         if sel != "Todos":
             df = df[df[col] == sel]
-
+st.markdown("---")
 # Descripción multiselect
 if "Descripción" in df.columns:
     desc_disp = sorted(df["Descripción"].dropna().astype(str).unique().tolist())
