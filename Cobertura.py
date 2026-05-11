@@ -110,7 +110,7 @@ df = INV.copy()
 
 
         
-for col, label in [ ("División","División"), ("Plaza","Plaza"), ("Mercado","Mercado"),("Categoría","Categoría"),
+for col, label in [ ("División","División"), ("Plaza","Plaza"), ("Mercado","Mercado"),("Categoría","Categoría")]:
     if col in df.columns:
         sel = filtro(label, df[col])
         if sel != "Todos":
