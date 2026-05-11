@@ -16,6 +16,7 @@ st.set_page_config(page_title="Habilitados Marca Propia", page_icon="🔓", layo
 st.title("🔓 Reporte de Habilitados | Marca Propia 🏪")
 st.markdown("✅ Arrastra aquí el archivo de habilitados, por división")
 st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas reiniciar todo solo da refresh a la página")
+st.sidebar.image("el-logo.png", width=250)
 kpi_top = st.container()
 
 
