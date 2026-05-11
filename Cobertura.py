@@ -16,6 +16,7 @@ st.set_page_config(page_title="Cobertura Marca Propia", page_icon="🛒", layout
 st.title("🛒🎯 Reporte de Cobertura | Marca Propia")
 st.markdown("✅ Arrastra aquí el archivo de inventarios")
 st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas reiniciar todo solo da refresh a la página")
+st.sidebar.image("logo.png", width=170)
 kpi_top = st.container()
 
 #----------------------------------------------------------------------------------------   
