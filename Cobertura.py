@@ -115,20 +115,17 @@ for col, label in [ ("División","División"), ("Plaza","Plaza"), ("Mercado","Me
         sel = filtro(label, df[col])
         if sel != "Todos":
             df = df[df[col] == sel]
-st.markdown("---")
+
+
 # Descripción multiselect
 if "Descripción" in df.columns:
+    st.markdown("---")
     desc_disp = sorted(df["Descripción"].dropna().astype(str).unique().tolist())
     sel_desc = st.sidebar.multiselect("Descripción", desc_disp)
     if sel_desc:
         df = df[df["Descripción"].isin(sel_desc)]
 
-#2.2 Catalogación al final, multiselect sobre el df ya filtrado
-if "Catalogación" in df.columns:
-    cats_disp = sorted(df["Catalogación"].dropna().astype(str).unique().tolist())
-    sel_cats = st.sidebar.multiselect("Catalogación", cats_disp, default=cats_disp)
-    if sel_cats:
-        df = df[df["Catalogación"].isin(sel_cats)]
+
 
 # =========================
 # SECCIÓN 4 — Calculos y tabla
