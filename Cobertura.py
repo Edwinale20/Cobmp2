@@ -136,9 +136,9 @@ def color_sem(serie):
     for v in serie:
         if pd.isna(v):
             colors.append("background-color: lightgray; color: black;")
-        elif v < 40:
+        elif v < 70:
             colors.append("background-color: #ff4d4d; color: white;")
-        elif v < 90:
+        elif v < 95:
             colors.append("background-color: #ffd633; color: black;")
         else:
             colors.append("background-color: #5cd65c; color: black;")
